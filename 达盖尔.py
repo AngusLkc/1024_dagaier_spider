@@ -24,6 +24,7 @@ header={
     "Accept-Encoding":"gzip, deflate",
     "Connection":"close"
 }
+'''国内抓取需配置代理'''
 proxy={"http":"socks5://127.0.0.1:1088","https":"socks5://127.0.0.1:1088"}
 
 class ThreadManager(object):
