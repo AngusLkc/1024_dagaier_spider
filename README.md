@@ -1,7 +1,7 @@
 # caoliu_1024_dagaier_spider
 爬取草榴论坛"达盖尔的旗帜"分类下的主题图片<br>
-<br>
-<br>
+
+
 运行：
 =========
 linux:<br>
@@ -9,8 +9,8 @@ python ./达盖尔.py<br>
 or<br>
 windows:<br>
 python .\达盖尔.py<br>
-<br>
-<br>
+
+
 环境准备：
 =========
 windows：<br>
@@ -18,13 +18,12 @@ windows：<br>
 pip install pyquery<br>
 pip install -U requests[socks]==2.12.0<br>
 
-
 linux:<br>
 ---------
 pip install pyquery<br>
 pip install requests[socks]<br>
-<br>
-<br>
+
+
 修改参数：<br>
 =========
 请修改为自己SS or SSR监听的端口<br>
