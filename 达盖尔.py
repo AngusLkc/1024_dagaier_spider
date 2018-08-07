@@ -4,7 +4,7 @@
 import os
 import sys
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('utf-8')
 import time
 import inspect
 import logging
