@@ -104,13 +104,22 @@ def downimg(url,title):
     req.adapters.DEFAULT_RETRIES=5
     req.keep_alive=False
     imgname=url.split('/')[-1]
-    img_req=req.get(url=url,timeout=5)
+    try:
+        img_req=req.get(url=url,timeout=5)
+    except:
+        return False
     img_req.encoding='gbk'
     if img_req.status_code==200:
         if not os.path.exists("./images"):
-            os.makedirs("./images")
+            try:
+                os.makedirs("./images")
+            except:
+                return False
         if not os.path.exists("./images/"+title):
-            os.makedirs("./images/"+title)
+            try:
+                os.makedirs("./images/"+title)
+            except:
+                return False
         with open('./images/'+title+'/'+imgname,'wb+') as fd:
             fd.write(img_req.content)
         return True
