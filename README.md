@@ -1,6 +1,7 @@
 # caoliu_1024_dagaier_spider
 爬取草榴论坛"达盖尔的旗帜"分类下的主题图片<br>
 
+https://raw.githubusercontent.com/cary-zhou/caoliu_1024_dagaier_spider/master/dagaier.zip
 
 运行：
 =========
