@@ -29,33 +29,40 @@ header={
 proxy={"http":"socks5://127.0.0.1:1088","https":"socks5://127.0.0.1:1088"}
 
 class ThreadManager(object):
+    '''线程池管理器'''
     def __init__(self,num):
-        self.thread_num=num
-        self.queue=queue()
-        self.threadlist=list()
-        self.shutdown=threading.Event()
+        self.thread_num=num #线程编号
+        self.queue=queue()  #任务队列
+        self.threadlist=list()  #线程池列表
+        self.shutdown=threading.Event() #线程退出标志
     
     def add_task(self,topic_url,topic_title):
+        '''添加任务'''
         self.queue.put((topic_url,topic_title))
     
     def __start__(self):
+        '''线程初始化'''
         for i in range(self.thread_num):
             i=ThreadWork(self.queue,self.shutdown,i)
             i.start()
             self.threadlist.append(i)
     
     def waitcomplete(self):
+        '''等待线程退出'''
         for i in self.threadlist:
             if i.isAlive():
                 i.join()
     
     def isEmpty(self):
+        '''判断任务队列为空'''
         return self.queue.empty()
     
     def __close__(self):
+        '''设置线程退出标志'''
         self.shutdown.set()
 
 class ThreadWork(threading.Thread):
+    '''工作线程入口'''
     def __init__(self,work_queue,shutdown,num):
         threading.Thread.__init__(self)
         self.setName(str(num))
@@ -76,16 +83,29 @@ class ThreadWork(threading.Thread):
                 dagaier(url,title)
 
 def dagaier(topicurl,title):
+    '''下载帖子内容'''
     req=requests.session()
     req.headers.update(header)
     req.proxies.update(proxy)
     req.adapters.DEFAULT_RETRIES=5
     req.keep_alive=False
-    topic_req=req.get(topicurl,timeout=5)
-    topic_req.encoding='gbk'
-    if topic_req.status_code!=200:
-        logging.warning(u"线程ID：%s，下载主题页失败, Status:%s, URL:%s"%(threading.currentThread().getName(),topic_req.status_code,topicurl))
-        return False
+    topic_req=None
+    error_count=0
+    while True:
+        if error_count>2: #异常或错误超过三次
+            logging.warning(u"线程ID：%s，下载帖子内容失败, URL:%s"%(threading.currentThread().getName(),topicurl))
+            return
+        try:
+            topic_req=req.get(topicurl,timeout=5)
+            topic_req.encoding='gbk'
+            if topic_req.status_code!=200:
+                error_count+=1
+                continue
+        except:
+            error_count+=1
+            continue
+        else:
+            break
     topic_pq=pq(topic_req.text)
     imglist=topic_pq("div[class='tpc_content do_not_catch']>input[type='image']").items()
     for item in imglist:
@@ -94,41 +114,51 @@ def dagaier(topicurl,title):
         elif item.attr('data-src') is not None:
             downimg(item.attr('data-src'),title)
         else:
-            logging.warning(u"线程ID：%s，读取帖子内图片URL失败, URL:%s"%(threading.currentThread().getName(),topicurl))
+            logging.warning(u"线程ID：%s，读取帖子图片URL失败, URL:%s"%(threading.currentThread().getName(),topicurl))
             return False
 
 def downimg(url,title):
+    '''下载帖子图片'''
     req=requests.session()
     req.headers.update(header)
     req.proxies.update(proxy)
     req.adapters.DEFAULT_RETRIES=5
     req.keep_alive=False
     imgname=url.split('/')[-1]
-    try:
-        img_req=req.get(url=url,timeout=5)
-    except:
-        return False
-    img_req.encoding='gbk'
-    if img_req.status_code==200:
-        if not os.path.exists("./images"):
-            try:
-                os.makedirs("./images")
-            except:
-                return False
-        if not os.path.exists("./images/"+title):
-            try:
-                os.makedirs("./images/"+title)
-            except:
-                return False
-        with open('./images/'+title+'/'+imgname,'wb+') as fd:
-            fd.write(img_req.content)
-        return True
-    else:
-        logging.warning(u"线程ID:%s，下载图片失败, Status:%s, URL:%s"%(threading.currentThread().getName(),img_req.status_code,url))
-        return False
+    error_count=0
+    while True:
+        if error_count>2:
+            logging.warning(u"线程ID：%s，下载帖子图片失败, URL:%s"%(threading.currentThread().getName(),url))
+            return
+        try:
+            img_req=req.get(url=url,timeout=5)
+            img_req.encoding='gbk'
+            if img_req.status_code!=200:
+                error_count+=1
+                continue
+        except:
+            error_count+=1
+            continue
+        else:
+            break
+    if not os.path.exists("./images/"+title):
+        try:
+            os.makedirs("./images/"+title)
+        except:
+            logging.error(u"创建目录:\"%s\"失败!"%("./images/"+title))
+            return False
+    with open('./images/'+title+'/'+imgname,'wb+') as fd:
+        fd.write(img_req.content)
+    return True
 
 if __name__=='__main__':
     os.chdir(os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe()))))
+    if not os.path.exists("./images"):
+        try:
+            os.makedirs("./images")
+        except:
+            logging.critical(u"创建images目录失败,请检查当前用户是否有前线新建目录!")
+            sys.exit(-1)
     work_manager=ThreadManager(8) #线程数
     work_manager.__start__()
     req=requests.session()
