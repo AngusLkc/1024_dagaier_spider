@@ -8,10 +8,15 @@ sys.setdefaultencoding('utf8')
 import time
 import inspect
 import logging
+import httplib
+httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 import requests
 import threading
 from pyquery import PyQuery as pq
-from Queue import Queue as queue
+try:
+    from Queue import Queue as queue
+except:
+    from queue import Queue as queue
 
 logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)-6s %(message)s',datefmt='%Y-%m-%d %H:%M:%S')
 logging.addLevelName(50,'CRIT')
@@ -31,7 +36,7 @@ proxy={"http":"socks5://127.0.0.1:1088","https":"socks5://127.0.0.1:1088"}
 class ThreadManager(object):
     '''线程池管理器'''
     def __init__(self,num):
-        self.thread_num=num #线程编号
+        self.thread_num=num #线程数量
         self.queue=queue()  #任务队列
         self.threadlist=list()  #线程池列表
         self.shutdown=threading.Event() #线程退出标志
@@ -47,12 +52,18 @@ class ThreadManager(object):
             i.start()
             self.threadlist.append(i)
     
+    def loop(self):
+        for i in self.threadlist:
+            if not i.isAlive():
+                i=ThreadWork(self.queue,self.shutdown,i)
+                i.start()
+    
     def waitcomplete(self):
         '''等待线程退出'''
         for i in self.threadlist:
             if i.isAlive():
                 i.join()
-    
+
     def isEmpty(self):
         '''判断任务队列为空'''
         return self.queue.empty()
@@ -190,9 +201,11 @@ if __name__=='__main__':
             if i.attr('href')[0:8]=='htm_data':
                 work_manager.add_task(BasicURL+i.attr('href'),i.text())
     while not work_manager.isEmpty():
+        work_manager.loop()
         time.sleep(1)
     logging.info(u"设置程序关闭标志")
     work_manager.__close__()
     logging.info(u"等待所有线程退出")
     work_manager.waitcomplete()
     sys.exit(0)
+
