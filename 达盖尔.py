@@ -1,15 +1,15 @@
 #!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
-
 import os
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 import time
 import inspect
 import logging
-import httplib
-httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+try:
+    import httplib
+    httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+except:
+    pass
 import requests
 import threading
 from pyquery import PyQuery as pq
@@ -31,10 +31,10 @@ header={
 }
 
 '''国内抓取需配置代理'''
-proxy={"http":"socks5://127.0.0.1:1088","https":"socks5://127.0.0.1:1088"}
+proxy={"http":"http://127.0.0.1:1089","https":"https://127.0.0.1:1089"}
 
 class ThreadManager(object):
-    '''线程池管理器'''
+    '''线程池管理'''
     def __init__(self,num):
         self.thread_num=num #线程数量
         self.queue=queue()  #任务队列
@@ -87,7 +87,7 @@ class ThreadWork(threading.Thread):
                 logging.info(u"线程ID：%s，检测到线程退出标志！"%(self.getName()))
                 break
             try:
-                url,title=self.tasklist.get(timeout=1)
+                url,title=self.tasklist.get(timeout=3)
             except:
                 continue
             else:
@@ -95,11 +95,6 @@ class ThreadWork(threading.Thread):
 
 def dagaier(topicurl,title):
     '''下载帖子内容'''
-    req=requests.session()
-    req.headers.update(header)
-    req.proxies.update(proxy)
-    req.adapters.DEFAULT_RETRIES=5
-    req.keep_alive=False
     topic_req=None
     error_count=0
     while True:
@@ -107,7 +102,7 @@ def dagaier(topicurl,title):
             logging.warning(u"线程ID：%s，下载帖子内容失败, URL:%s"%(threading.currentThread().getName(),topicurl))
             return
         try:
-            topic_req=req.get(topicurl,timeout=5)
+            topic_req=requests.get(topicurl,headers=header,proxies=proxy,timeout=10)
             topic_req.encoding='gbk'
             if topic_req.status_code!=200:
                 error_count+=1
@@ -130,11 +125,6 @@ def dagaier(topicurl,title):
 
 def downimg(url,title):
     '''下载帖子图片'''
-    req=requests.session()
-    req.headers.update(header)
-    req.proxies.update(proxy)
-    req.adapters.DEFAULT_RETRIES=5
-    req.keep_alive=False
     imgname=url.split('/')[-1]
     error_count=0
     while True:
@@ -142,8 +132,8 @@ def downimg(url,title):
             logging.warning(u"线程ID：%s，下载帖子图片失败, URL:%s"%(threading.currentThread().getName(),url))
             return
         try:
-            img_req=req.get(url=url,timeout=5)
-            img_req.encoding='gbk'
+            img_req=requests.get(url,headers=header,proxies=proxy,timeout=10)
+            #img_req.encoding='gbk'
             if img_req.status_code!=200:
                 error_count+=1
                 continue
@@ -172,11 +162,6 @@ if __name__=='__main__':
             sys.exit(-1)
     work_manager=ThreadManager(8) #线程数
     work_manager.__start__()
-    req=requests.session()
-    req.headers.update(header)
-    req.proxies.update(proxy)
-    req.adapters.DEFAULT_RETRIES=5
-    req.keep_alive=False
     BasicURL='http://t66y.com/'
     offset=0
     error_count=0
@@ -187,7 +172,7 @@ if __name__=='__main__':
             error_count=0
             continue
         PageList='http://t66y.com/thread0806.php?fid=16&search=&page='+str(offset)
-        Page_Obj=req.get(url=PageList)
+        Page_Obj=requests.get(PageList,headers=header,proxies=proxy,timeout=10)
         Page_Obj.encoding='gbk'
         if Page_Obj.status_code!=200:
             error_count+=1
