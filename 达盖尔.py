@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 import os
+import re
 import sys
 import time
 import inspect
@@ -31,7 +32,7 @@ header={
 }
 
 '''国内抓取需配置代理'''
-proxy={"http":"http://127.0.0.1:1089","https":"https://127.0.0.1:1089"}
+proxy={"http":"http://192.168.168.1:1089","https":"https://192.168.168.1:1089"}
 
 class ThreadManager(object):
     '''线程池管理'''
@@ -125,7 +126,8 @@ def dagaier(topicurl,title):
 
 def downimg(url,title):
     '''下载帖子图片'''
-    imgname=url.split('/')[-1]
+    rstr = r"[\/\\\:\*\?\"\<\>\|]"
+    imgname=re.sub(rstr, "_", url.split('/')[-1])
     error_count=0
     while True:
         if error_count>2:
@@ -133,7 +135,6 @@ def downimg(url,title):
             return
         try:
             img_req=requests.get(url,headers=header,proxies=proxy,timeout=10)
-            #img_req.encoding='gbk'
             if img_req.status_code!=200:
                 error_count+=1
                 continue
@@ -142,13 +143,14 @@ def downimg(url,title):
             continue
         else:
             break
-    if not os.path.exists("./images/"+title):
+    dirname=re.sub(rstr, "_", title)
+    if not os.path.exists("./images/"+dirname):
         try:
-            os.makedirs("./images/"+title)
+            os.makedirs("./images/"+dirname)
         except:
-            logging.error(u"创建目录:\"%s\"失败!"%("./images/"+title))
+            logging.error(u"创建目录失败:\"%s\""%("./images/"+dirname))
             return False
-    with open('./images/'+title+'/'+imgname,'wb+') as fd:
+    with open("./images/"+dirname+'/'+imgname,'wb+') as fd:
         fd.write(img_req.content)
     return True
 
@@ -158,7 +160,7 @@ if __name__=='__main__':
         try:
             os.makedirs("./images")
         except:
-            logging.critical(u"创建images目录失败,请检查当前用户是否有前线新建目录!")
+            logging.critical(u"创建images目录失败,请检查当前用户是否有权限新建目录!")
             sys.exit(-1)
     work_manager=ThreadManager(8) #线程数
     work_manager.__start__()
