@@ -47,4 +47,3 @@ while offset<10: #主题列表分页数<br>
 如图：<br>
 ![image](https://github.com/cary-zhou/caoliu_1024_dagaier_spider/raw/master/snapshot/snap1.png)
 <br>爬取到的资源放在exe同级目录的images文件夹下，每个帖子每个文件夹分开存放，文件夹名就是帖子标题名。<br>
-程序偶尔会报一些404警告，这个很正常，DEBUG日志输出而已。<br>
