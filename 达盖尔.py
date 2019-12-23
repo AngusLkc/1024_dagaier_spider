@@ -32,7 +32,7 @@ header={
 }
 
 '''国内抓取需配置代理'''
-proxy={"http":"socks5://192.168.168.1:1089","https":"socks5://192.168.168.1:1089"}
+proxy={"http":"socks5h://127.0.0.1:1088","https":"socks5h://127.0.0.1:1088"}
 
 class ThreadManager(object):
     '''线程池管理'''
