@@ -14,13 +14,7 @@ python .\达盖尔.py<br>
 
 环境准备：
 =========
-windows：<br>
----------
-pip install pyquery<br>
-pip install requests<br>
-pip install -U requests[socks]<br>
-
-linux:<br>
+windows or Linux<br>
 ---------
 pip install pyquery<br>
 pip install requests<br>
