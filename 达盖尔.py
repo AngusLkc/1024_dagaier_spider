@@ -114,14 +114,13 @@ def dagaier(topicurl,title):
         else:
             break
     topic_pq=pq(topic_req.text)
-    imglist=topic_pq("div[class='tpc_content do_not_catch']>img").items()
+    imglist=topic_pq("div[class='tpc_content do_not_catch']").find("img").items()
     for item in imglist:
-        if item.attr('src') is not None:
-            downimg(item.attr('src'),title)
-        elif item.attr('data-src') is not None:
-            downimg(item.attr('data-src'),title)
+        if item.attr('ess-data') is not None:
+            logging.warning(u"提取图片URL:%s"%(item.attr('ess-data')))
+            downimg(item.attr('ess-data'),title)
         else:
-            logging.warning(u"线程ID：%s，读取帖子图片URL失败, URL:%s"%(threading.currentThread().getName(),topicurl))
+            logging.warning(u"线程ID:%s,读取帖子图片URL失败, URL:%s"%(threading.currentThread().getName(),topicurl))
             return False
 
 def downimg(url,title):
