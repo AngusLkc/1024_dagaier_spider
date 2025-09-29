@@ -184,7 +184,7 @@ if __name__=='__main__':
         PagePQ=pq(Page_Obj.text)
         TopicList=PagePQ("tbody>tr[class='tr3 t_one tac']>.tal>h3>a").items()
         for i in TopicList:
-            if i.attr('href')[0:8]=='htm_data':
+            if i.attr('href')[0:9]=='/htm_data':
                 work_manager.add_task(BasicURL+i.attr('href'),i.text())
     while not work_manager.isEmpty():
         work_manager.loop()
