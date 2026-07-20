@@ -100,7 +100,7 @@ def dagaier(topicurl,title):
     error_count=0
     while True:
         if error_count>2: #异常或错误超过三次
-            logging.warning(u"线程ID：%s，下载帖子内容失败, URL:%s"%(threading.currentThread().getName(),topicurl))
+            logging.warning(u"线程ID：%s，下载帖子内容失败, URL:%s"%(threading.current_thread().getName(),topicurl))
             return
         try:
             topic_req=requests.get(topicurl,headers=header,proxies=proxy,timeout=10)
@@ -120,7 +120,7 @@ def dagaier(topicurl,title):
             logging.warning(u"提取图片URL:%s"%(item.attr('ess-data')))
             downimg(item.attr('ess-data'),title)
         else:
-            logging.warning(u"线程ID:%s,读取帖子图片URL失败, URL:%s"%(threading.currentThread().getName(),topicurl))
+            logging.warning(u"线程ID:%s,读取帖子图片URL失败, URL:%s"%(threading.current_thread().getName(),topicurl))
             return False
 
 def downimg(url,title):
@@ -130,7 +130,7 @@ def downimg(url,title):
     error_count=0
     while True:
         if error_count>2:
-            logging.warning(u"线程ID：%s，下载帖子图片失败, URL:%s"%(threading.currentThread().getName(),url))
+            logging.warning(u"线程ID：%s，下载帖子图片失败, URL:%s"%(threading.current_thread().getName(),url))
             return
         try:
             img_req=requests.get(url,headers=header,proxies=proxy,timeout=10)
